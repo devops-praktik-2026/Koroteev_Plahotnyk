@@ -1,0 +1,34 @@
+# Как хранить переводы строк.
+#
+# Windows ставит в конце строки два символа, Linux — один. Если файл с двумя
+# попадёт внутрь контейнера, запуск упадёт с невнятной ошибкой вроде
+# "no such file or directory" на строке, которая явно на месте. Этот файл
+# избавляет от целого класса таких поломок: в репозитории всё хранится
+# в едином виде, а как именно — решает git при выгрузке.
+
+# По умолчанию git сам определяет, текстовый файл или двоичный,
+# и хранит текст с одним символом перевода строки.
+* text=auto eol=lf
+
+# Файлы, которым единый вид обязателен: их читают Linux и контейнеры.
+*.sh        text eol=lf
+*.py        text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.tf        text eol=lf
+*.toml      text eol=lf
+*.cfg       text eol=lf
+*.ini       text eol=lf
+*.md        text eol=lf
+Dockerfile  text eol=lf
+Makefile    text eol=lf
+
+# Скрипты PowerShell живут в Windows — им родные два символа.
+*.ps1       text eol=crlf
+
+# Двоичные файлы не трогать.
+*.png       binary
+*.jpg       binary
+*.pdf       binary
+*.pptx      binary
+*.zip       binary

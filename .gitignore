@@ -1,0 +1,37 @@
+# Окружение и временные файлы
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+build/
+dist/
+
+# Локальная база данных
+*.db
+*.sqlite3
+
+# Настройки с паролями — в репозиторий не попадают никогда.
+# Образец без секретов лежит в .env.example
+.env
+
+# Состояние инфраструктуры. Там адреса, идентификаторы и иногда пароли.
+# На занятии 5 разберём, почему этот файл нельзя хранить рядом с кодом.
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+crash.log
+
+# Ключи доступа
+*.pem
+*.key
+id_rsa*
+
+# Редакторы
+.idea/
+.vscode/
+.DS_Store

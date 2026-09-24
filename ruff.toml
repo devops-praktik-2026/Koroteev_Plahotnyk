@@ -1,0 +1,32 @@
+# Единые правила оформления кода для всего репозитория.
+# Проверить:  make lint
+# Исправить:  make fmt
+
+line-length = 100
+target-version = "py311"
+
+exclude = [".venv", "migrations/versions"]
+
+[lint]
+select = [
+    "E",   # ошибки оформления
+    "F",   # явные ошибки в коде
+    "I",   # порядок импортов
+    "UP",  # устаревшие конструкции языка
+    "B",   # частые логические ловушки
+    "C4",  # упрощение работы со списками и словарями
+]
+ignore = [
+    "B008",  # Depends(...) в аргументах по умолчанию — это норма для FastAPI
+]
+
+[lint.isort]
+# Наши собственные пакеты. Без этого ruff считает их чужими библиотеками
+# и требует складывать импорты в одну кучу с fastapi и sqlalchemy.
+known-first-party = ["accounts", "orders"]
+
+[lint.per-file-ignores]
+"services/*/tests/*" = ["E501"]
+
+[format]
+quote-style = "double"

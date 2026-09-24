@@ -1,0 +1,74 @@
+# Автоматические проверки. Запускаются сами при каждой отправке изменений
+# и при каждом запросе на внесение изменений в основную ветку.
+#
+# Порядок шагов не случайный: сначала быстрые проверки, потом медленные.
+# Нет смысла тратить две минуты на тесты, если код не проходит проверку
+# стиля за десять секунд.
+
+name: Проверки
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Если отправить новое изменение, пока старая проверка ещё идёт,
+# старая останавливается: незачем занимать очередь устаревшим кодом.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Стиль кода
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Поставить проверялку стиля
+        run: pip install "ruff>=0.8"
+
+      - name: Проверить правила
+        run: ruff check .
+
+      - name: Проверить оформление
+        run: ruff format --check .
+
+  tests:
+    name: Тесты
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Поставить зависимости обоих сервисов
+        run: |
+          pip install --upgrade pip
+          pip install -e "./services/accounts[dev]" -e "./services/orders[dev]"
+
+      - name: Прогнать тесты
+        run: pytest --cov-report=term-missing
+
+  docker:
+    name: Сборка образов
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Собрать образ сервиса клиентов
+        run: docker build -t accounts:ci ./services/accounts
+
+      - name: Собрать образ сервиса заказов
+        run: docker build -t orders:ci ./services/orders
+
+      - name: Показать размеры образов
+        run: docker images --format "{{.Repository}}:{{.Tag}}  {{.Size}}" | grep ':ci'

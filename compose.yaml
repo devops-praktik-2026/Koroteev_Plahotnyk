@@ -1,0 +1,48 @@
+# Запуск всей системы одной командой: make up
+#
+# Здесь три части: база данных, сервис клиентов и сервис заказов.
+# Обратите внимание на depends_on с condition — без него сервис клиентов
+# стартует раньше базы данных и падает.
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: praktikum
+      POSTGRES_PASSWORD: praktikum
+      POSTGRES_DB: accounts
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U praktikum -d accounts"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  accounts:
+    build: ./services/accounts
+    environment:
+      DATABASE_URL: postgresql+psycopg://praktikum:praktikum@db:5432/accounts
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8001:8000"
+    # Сначала приводим структуру базы к нужному виду, потом запускаем сервис.
+    # На занятии 8 разберём, почему именно в таком порядке.
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn accounts.main:app --host 0.0.0.0 --port 8000"
+
+  orders:
+    build: ./services/orders
+    environment:
+      ACCOUNTS_URL: http://accounts:8000
+    depends_on:
+      accounts:
+        condition: service_healthy
+    ports:
+      - "8002:8000"
+
+volumes:
+  pgdata:

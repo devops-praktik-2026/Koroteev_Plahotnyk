@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Правила доски
+    url: https://github.com/devops-praktik-2026/devops-praktikum-template/blob/main/docs/board.md
+    about: Как устроены колонки, ограничения и критерии готовности
